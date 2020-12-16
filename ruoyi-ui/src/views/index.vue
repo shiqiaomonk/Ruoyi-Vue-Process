@@ -63,6 +63,11 @@
             >1055202292</a
             >
             </p>
+            <img
+              src="~@/assets/image/qqgroup.jpg"
+              alt="qqgroup"
+              width="100%"
+            />
           </div>
         </el-card>
       </el-col>
