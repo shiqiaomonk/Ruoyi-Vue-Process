@@ -24,6 +24,7 @@ import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.impl.persistence.entity.TaskEntityImpl;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Comment;
+import org.activiti.engine.task.DelegationState;
 import org.activiti.engine.task.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,7 +54,7 @@ public class ProcessServiceImpl implements IProcessService {
     private RuntimeService runtimeService;
     private SysUserMapper userMapper;
     private TaskMapper taskMapper;
-    
+
     /**
      * 提交申请
      */
@@ -308,12 +309,17 @@ public class ProcessServiceImpl implements IProcessService {
             TaskEntityImpl task = (TaskEntityImpl) taskService.createTaskQuery()
                     .taskId(taskId)
                     .singleResult();
-            // OWNER_ 不为 null 表示该任务是转办任务
-            if (StringUtils.isNotBlank(task.getOwner())) {
+            // DELEGATION_ 为 PENDING 表示该任务是转办任务
+            if (task.getDelegationState() != null && task.getDelegationState().equals(DelegationState.PENDING)) {
                 taskService.resolveTask(taskId, variables);
                 // 批注说明是转办
                 String delegateUserName = userMapper.selectUserByUserName(SecurityUtils.getUsername()).getNickName();
                 comment += "【由" + delegateUserName + "转办】";
+
+                // 如果是 OWNER_ 为 null 的转办任务（候选组的待办），暂且用转办人来签收该任务
+                if (StringUtils.isBlank(task.getOwner())) {
+                    taskService.claim(taskId, SecurityUtils.getUsername());
+                }
             } else {
                 // 只有签收任务，act_hi_taskinst 表的 assignee 字段才不为 null
                 taskService.claim(taskId, SecurityUtils.getUsername());
