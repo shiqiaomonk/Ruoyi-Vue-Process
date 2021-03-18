@@ -197,7 +197,7 @@
 
 ## 闲鹿工作流分离版交流群
 
-QQ群：603909590
+QQ群：133534862、603909590（满）
 ![QQ群](ruoyi-ui/src/assets/image/qqgroup.jpg)
 
 ## 视频和资料
